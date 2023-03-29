@@ -1,0 +1,46 @@
+version: '3'
+services:
+
+  redis:
+    image: redis:7-alpine
+    restart: on-failure:5
+  nn_doctype:
+    build: docker/nn_doctype
+    image: nn_doctype
+    depends_on:
+      - redis
+    restart: on-failure:5
+    env_file:
+      - .env
+    volumes:
+      - /root/documents_recognition_service/models:/code/selected_models:ro
+  nn_second:
+    build: docker/nn_second
+    image: nn_second
+    depends_on:
+      - redis
+    restart: on-failure:5
+    env_file:
+      - .env
+    volumes:
+      - /root/documents_recognition_service/models:/code/selected_models:ro
+  worker:
+    build: docker/worker
+    image: worker
+    depends_on:
+      - redis
+      - nn_doctype
+      - nn_second
+    restart: on-failure:5
+    env_file:
+      - .env
+  web:
+    build: docker/web
+    image: web
+    ports:
+      - "80:5000"
+    depends_on:
+      - worker
+    restart: on-failure:5
+    env_file:
+      - .env

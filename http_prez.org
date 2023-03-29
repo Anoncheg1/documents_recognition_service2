@@ -1,0 +1,166 @@
+- https://onlinehtmleditor.dev/
+plan:
+- check test files at server
+- strip swagger page
+- index.html:
+  Hello this is my recognition service:
+  - choose file to test: list of file
+    - link to download file
+    - link to push - GET image_file to Flask, return link to fait page or report
+  - link to swagger api
+
+
+files:
+- a.py - FLASK
+- a.html - index.html
+index.html:
+#+begin_src html
+<h2 style="text-align:center">Document recognition services</h2>
+<p style="text-align:left">Hello, I made this service between 2020 and 2021 for my current company, it is used in production now.</p>
+<ul>
+    <li style="text-align: left;"><a href="http://asdasd">Test service</a></li>
+    <li style="text-align: left;"><a href="http://Swagger API UI">http://Swagger API UI</a></li>
+    <li style="text-align: left;"><a href="http://asdasd">Service parts</a></li>
+    <li style="text-align: left;"><a href="http://Features">Features</a></li>
+    <li style="text-align: left;">&nbsp;</li>
+</ul>
+<p style="text-align:left">&nbsp;</p>
+<p style="text-align:center"><strong>Test service:</strong></p>
+<p><img alt="Click me!" src="files://home/u/sources/documents_recognition_service/docker/worker/code/test/passport200-601-0.png" style="border-style:solid; border-width:2px; height:120px; margin-bottom:12px; margin-top:12px; width:100px" />
+<a href="/upload_passport_test/passport200-601-0.png">CLICK TO RECOGNIZE IT!</a>
+</p>
+<p>asd</p>
+<p>&nbsp;</p>
+<p>asd</p>
+<p style="text-align:left">&nbsp;</p>
+<p style="text-align:left">&nbsp;</p>
+<p style="text-align:left">Try it now!</p>
+<p style="text-align:center"><strong>Consist of</strong></p>
+<ul>
+    <li>Flask Web server with REST API represented by Swagger tool. (Try API now!)</li>
+    <li>Redis in-memory database for message broker.</li>
+    <li style="text-align:left">scalable workers</li>
+</ul>
+<p style="text-align:center"><strong>Allow to recognize:</strong></p>
+<ul>
+    <li>passport - page number and text at main page (40-70 seconds)</li>
+    <li>driving license (30-40 seconds)</li>
+    <li>document type by text</li>
+    <li>document type by barcode</li>
+    <li>document orientation and type including photos.</li>
+</ul>
+<p>&nbsp;</p>
+#+end_src
+** old
+#+begin_src html
+<p style="text-align: center;">&nbsp;</p>
+<p style="text-align: center;"><strong>Document recognition services</strong></p>
+<p style="text-align: left;">Hello, I made this service between 2020 and 2021 for my current company, it is used in production now.</p>
+<p style="text-align: left;">Try it now!</p>
+<p style="text-align: left;">Consist of</p>
+<ul>
+<li>Flask Web server with REST API represented by Swagger tool. (Try API now!)</li>
+<li>Redis in-memory database for message broker.</li>
+<li style="text-align: left;">scalable workers</li>
+</ul>
+<p>Allow to recognize:</p>
+<ul>
+<li>passport - page number and text at main page (40-70 seconds)</li>
+<li>driving license (30-40 seconds)</li>
+<li>document type by text</li>
+<li>document type by barcode</li>
+<li>document orientation and type including photos.</li>
+</ul>
+<p>&nbsp;</p>
+#+end_src
+* service
+#+begin_src shell
+curl -vv -X POST -F file1=@/home/ff/Downloads/art.jpg http://ovz1.j09775017.px7zm.vps.myjino.ru/simple_api/barcodes_only_upload
+#+end_src
+
+#+results:
+: id": "a43219ce4a4a490d9cd34beb718cb09f
+
+#+begin_src http :curl -F file1=@/home/ff/Downloads/art.jpg :wrap EXPORT javascript
+POST http://ovz1.j09775017.px7zm.vps.myjino.ru/simple_api/barcodes_only_upload
+Accept: application/json
+#+end_src
+
+#+RESULTS:
+#+begin_EXPORT javascript
+HTTP/1.1 200 OK
+Date: Sun, 02 Oct 2022 05:48:41 GMT
+Content-Type: application/json
+Content-Length: 42
+Connection: keep-alive
+Server: Werkzeug/0.16.0 Python/3.7.14
+
+{"id": "778041a4f3fc46c38a9b563a1a9be724"}
+#+end_EXPORT
+
+
+#+begin_src shell :results output :wrap EXPORT javascript
+curl -X GET "http://anonchek.ru/get?id=a43219ce4a4a490d9cd34beb718cb09f" -H  "accept: application/json"
+#+end_src
+
+#+RESULTS:
+#+begin_EXPORT javascript
+{
+    "status": "ready",
+    "pages": [
+        {
+            "document_type": 0,
+            "qc": 0,
+            "file_uuid": "2c68c75b42254df0aa150a5b30d791a8"
+        }
+    ],
+    "time_seconds": 0.99
+}
+#+end_EXPORT
+
+#+begin_src http :pretty json :wrap EXPORT javascript
+GET http://anonchek.ru/get?id=778041a4f3fc46c38a9b563a1a9be724
+Accept: application/json
+#+end_src
+
+#+RESULTS:
+#+begin_example
+{
+  "status": "ready",
+  "pages": [
+    {
+      "document_type": 0,
+      "qc": 0,
+      "file_uuid": "1d1036fcc94748ed9f145bd106bcc68f"
+    }
+  ],
+  "time_seconds": 1.01
+}
+#+end_example
+
+* my
+#+begin_src http :curl -F file=@/home/ff/Downloads/art.jpg :wrap EXPORT javascript
+POST http://localhost:8080/upload
+Accept: application/json
+#+end_src
+
+#+RESULTS:
+#+begin_EXPORT javascript
+HTTP/1.1 200 OK
+Server: Werkzeug/2.2.2 Python/3.10.6
+Date: Wed, 05 Oct 2022 02:39:09 GMT
+Content-Type: application/json
+Content-Length: 42
+Connection: close
+
+{"id": "60c08b76366545df878604e8278ddd2a"}
+#+end_EXPORT
+
+#+begin_src http :pretty
+GET http://localhost:8080/get?id=123
+#+end_src
+
+#+RESULTS:
+: {
+:   "status": "processing"
+: }

@@ -1,0 +1,71 @@
+FROM ubuntu:bionic
+
+ARG VERSION=4.1.0
+ARG PREFIX=/usr/local
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  g++ \
+  autoconf automake libtool  make \
+  pkg-config \
+  libpng-dev \
+  libjpeg-dev \
+  libtiff5-dev \
+  zlib1g-dev \
+  libleptonica-dev \
+  curl \
+  openssl \
+  ca-certificates \
+  && curl --silent --location --location-trusted --remote-name https://github.com/tesseract-ocr/tesseract/archive/$VERSION.tar.gz \
+  && tar -xzf $VERSION.tar.gz \
+  && cd tesseract-$VERSION \
+  && ./autogen.sh \
+  && ./configure --prefix=$PREFIX \
+  && make -j3 \
+  && make install
+
+# SECOND STEP
+# FROM debian:bullseye-slim
+FROM ubuntu:focal
+
+ENV TZ=Europe/Moscow
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
+# tessetact
+ARG VERSION=4.1.0
+ARG PREFIX=/usr/local
+COPY --from=0 "$PREFIX" /usr/local
+
+# set time,
+# opencv 4.2.0
+# groonga 9.1.2
+# poppler-utils for pdf2image
+# libzbar0 for pyzbar
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
+  && apt-get update && apt-get install -y --no-install-recommends \
+  liblept5 \
+  libgomp1 \
+  python3.8 \
+  python3-pip \
+  python3-dev \
+  python3-opencv \
+  python3-setuptools \
+  poppler-utils \
+  groonga \
+  libzbar0 \
+  && apt-get autoclean \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* \
+  && update-alternatives --install /usr/bin/python python3 /usr/bin/python3.8 1 \
+  && echo 1 | update-alternatives --config python3 \
+  && python --version
+
+ADD code/*.traineddata $PREFIX/share/tessdata/
+
+WORKDIR /code
+ADD code /code
+
+RUN pip3 install --upgrade pip \
+  && pip3 install -r requirements.txt --ignore-installed --no-cache-dir
+
+CMD sleep 10 && python3 worker.py

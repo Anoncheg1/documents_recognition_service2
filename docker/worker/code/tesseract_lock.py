@@ -1,0 +1,5 @@
+import threading
+
+tesseract_image_to_data_lock = threading.Lock()
+tesseract_image_to_string_lock = tesseract_image_to_data_lock
+tesseract_image_to_boxes_lock = tesseract_image_to_data_lock
